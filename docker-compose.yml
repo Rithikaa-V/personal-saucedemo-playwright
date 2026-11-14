@@ -1,0 +1,14 @@
+services:
+  tests:
+    build: .
+    ipc: host                 # prevents Chromium crashes from small /dev/shm
+    init: true
+    environment:
+      - CI=1
+      - UI_BASE_URL=${UI_BASE_URL:-https://www.saucedemo.com}
+      - API_BASE_URL=${API_BASE_URL:-https://restful-booker.herokuapp.com}
+    volumes:
+      - ./playwright-report:/app/playwright-report
+      - ./test-results:/app/test-results
+      - ./blob-report:/app/blob-report
+    # Override for a sharded run: docker compose run --rm tests npx playwright test --shard=1/4
