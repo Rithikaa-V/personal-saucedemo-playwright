@@ -1,6 +1,4 @@
-# Version MUST match @playwright/test in package.json
-FROM mcr.microsoft.com/playwright:v1.49.1-noble
-
+FROM mcr.microsoft.com/playwright:v1.65.1-noble
 WORKDIR /app
 ENV CI=1 HOME=/root
 

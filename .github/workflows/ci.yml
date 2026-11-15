@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
-      image: mcr.microsoft.com/playwright:v1.49.1-noble   # keep in sync with package.json
+      image: mcr.microsoft.com/playwright:v1.65.1-noble   # must equal @playwright/test version
       options: --ipc=host
     strategy:
       fail-fast: false
