@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: npm }
+        with: { node-version: 22, cache: npm }
       - run: npm ci
       - run: npm run typecheck
 
@@ -33,12 +33,11 @@ jobs:
       matrix:
         shardIndex: [1, 2, 3, 4]
         shardTotal: [4]
-    env:
-      HOME: /root
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: npm }
+        with: { node-version: 22, cache: npm }
+      - run: node -v && npm -v && npx playwright --version
       - run: npm ci
       - name: Run tests (shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
         run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
@@ -48,6 +47,7 @@ jobs:
         with:
           name: blob-report-${{ matrix.shardIndex }}
           path: blob-report
+          if-no-files-found: error
           retention-days: 7
       - name: Upload traces/videos of failures
         if: failure()
@@ -58,21 +58,24 @@ jobs:
           retention-days: 7
 
   merge-reports:
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && needs.test.result != 'skipped' }}
     needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: npm }
+        with: { node-version: 22, cache: npm }
       - run: npm ci
       - uses: actions/download-artifact@v4
         with:
           path: all-blob-reports
           pattern: blob-report-*
           merge-multiple: true
-      - run: npx playwright merge-reports --reporter html ./all-blob-reports
+      - name: Merge HTML report
+        if: ${{ hashFiles('all-blob-reports/**') != '' }}
+        run: npx playwright merge-reports --reporter html ./all-blob-reports
       - uses: actions/upload-artifact@v4
+        if: ${{ hashFiles('all-blob-reports/**') != '' }}
         with:
           name: playwright-html-report
           path: playwright-report
